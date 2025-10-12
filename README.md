@@ -95,26 +95,7 @@ curl.exe -Method POST -Body (ConvertTo-Json @{name='Alice';email='a@example.com'
 
 Alternatively use Postman, Insomnia, or a browser for GET endpoints.
 
-## How the pieces fit
 
-- `server.js` mounts the three route modules: `/auth`, `/faculty`, `/student`.
-- Controllers are currently stubs that return JSON; they are the right place to implement validation, full DB queries, and authentication logic.
-- `db.js` exports the MySQL pool; require it in controllers to run queries, e.g. `const pool = require('../db'); const [rows] = await pool.query('SELECT ...');`
-
-## Suggested next work items (I can implement any of these)
-
-- Implement controller database queries (CRUD) and create a minimal SQL schema / migration script.
-- Add authentication with JWT (login returns token, protected routes require token).
-- Add request validation (express-validator or Joi) and password hashing (bcrypt).
-- Create `package.json` scripts and a `.gitignore` (ignore `node_modules`, `.env`).
-- Add basic tests (Jest or Mocha) and a CI workflow.
-
-If you want, I can implement a complete example for one resource (students or faculty):
-- Create SQL table schema
-- Implement controllers with queries
-- Add example requests and unit tests
-
-Tell me which next task you want me to do and I will implement it and update the README accordingly.
 
 ---
 
