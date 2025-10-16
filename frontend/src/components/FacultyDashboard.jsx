@@ -40,8 +40,7 @@ export default function FacultyDashboard() {
     try {
       const res = await API.get('/faculty/students', { headers: { Authorization: `Bearer ${token}` } });
       setStudents(res.data);
-    } catch (err) {
-      console.error(err);
+    } catch {
       toast.error('Failed to fetch students.');
     }
   };
@@ -53,8 +52,7 @@ export default function FacultyDashboard() {
       const uniqueStudents = {};
       res.data.forEach(r => { if (!uniqueStudents[r.student]) uniqueStudents[r.student] = r.cgpa; });
       setResults(Object.entries(uniqueStudents).map(([name, cgpa]) => ({ name, cgpa })));
-    } catch (err) {
-      console.error(err);
+    } catch {
       toast.error('Failed to fetch results.');
     } finally { setLoading(false); }
   };
@@ -78,8 +76,7 @@ export default function FacultyDashboard() {
         setMarksForm({ ...initialMarks, ...savedMarks });
         const student = students.find(s => s.id === selectedStudent);
         if (student) setCgpa(student.cgpa ?? null);
-      } catch (err) {
-        console.error(err);
+      } catch {
         toast.error('Failed to fetch subjects or marks.');
       }
     };
@@ -98,19 +95,16 @@ export default function FacultyDashboard() {
     if (!selectedStudent) return toast.error('Select a student first');
     const allFilled = Object.values(marksForm).every(m => m !== '' && m !== null);
     if (!allFilled) return toast.error('Please fill all marks before saving');
-
     const payload = subjects.map(sub => ({
       student_id: selectedStudent,
       subject_id: sub.id,
       marks: marksForm[sub.name],
     }));
-
     setLoading(true);
     try {
       await API.post('/faculty/add-result-bulk', payload, { headers: { Authorization: `Bearer ${token}` } });
       toast.success('Marks saved! Now you can calculate CGPA.');
     } catch (err) {
-      console.error(err);
       toast.error(err.response?.data?.message || 'Failed to save marks.');
     } finally { setLoading(false); }
   };
@@ -123,7 +117,6 @@ export default function FacultyDashboard() {
       setCgpa(res.data.cgpa);
       toast.success('CGPA calculated successfully!');
     } catch (err) {
-      console.error(err);
       toast.error(err.response?.data?.message || 'Failed to calculate CGPA');
     } finally { setLoading(false); }
   };
@@ -138,7 +131,6 @@ export default function FacultyDashboard() {
       setNewStudent({ name: '', email: '', password: '' });
       fetchStudents();
     } catch (err) {
-      console.error(err);
       toast.error(err.response?.data?.message || 'Failed to add student');
     } finally { setLoading(false); }
   };
@@ -168,7 +160,7 @@ export default function FacultyDashboard() {
 
       {/* Sidebar */}
       <div className={clsx(
-        'bg-gray-900 shadow-2xl z-20 flex flex-col transition-all duration-300',
+        'bg-gray-900 shadow-2xl flex flex-col transition-all duration-300',
         sidebarOpen ? 'w-64 p-6' : 'w-20 p-4'
       )}>
         <div className="flex justify-between items-center mb-8">
@@ -176,7 +168,6 @@ export default function FacultyDashboard() {
           <button
             className="text-gray-400 hover:text-white transition-colors duration-200 p-1 rounded-full"
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            title={sidebarOpen ? 'Collapse Menu' : 'Expand Menu'}
           >
             {sidebarOpen ? Icons.Collapse : Icons.Expand}
           </button>
@@ -192,8 +183,7 @@ export default function FacultyDashboard() {
         <div className="mt-auto pt-4 border-t border-gray-700">
           <button
             className={clsx(
-              'flex items-center p-3 rounded-xl w-full transition-colors duration-200',
-              'bg-red-700 text-white hover:bg-red-800',
+              'flex items-center p-3 rounded-xl w-full transition-colors duration-200 bg-red-700 text-white hover:bg-red-800',
               !sidebarOpen && 'justify-center'
             )}
             onClick={handleLogout}
@@ -215,20 +205,20 @@ export default function FacultyDashboard() {
 
         <h1 className="text-3xl font-extrabold text-gray-800 mb-6 border-b pb-2">Faculty Dashboard</h1>
 
-        {/* Marks Tab */}
+        {/* MARKS TAB */}
         {activeTab === 'marks' && (
-          <div className="bg-white p-6 rounded-xl shadow-lg">
-            <h2 className="text-xl font-semibold text-gray-700 mb-5">Enter/Update Marks</h2>
-            <div className="mb-6 flex gap-4 flex-wrap">
-              <select value={year} onChange={e => setYear(e.target.value)} className="border border-gray-300 p-2 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
+          <div className="bg-white p-6 rounded-xl shadow-lg transition-all duration-200">
+            <h2 className="text-xl font-semibold text-gray-700 mb-5">Enter / Update Marks</h2>
+            <div className="flex flex-wrap gap-4 mb-6">
+              <select value={year} onChange={e => setYear(e.target.value)} className="border p-2 rounded-lg">
                 <option value="">Select Year</option>
-                {[1, 2, 3, 4].map(y => <option key={y} value={y}>{`Year ${y}`}</option>)}
+                {[1,2,3,4].map(y => <option key={y} value={y}>{`Year ${y}`}</option>)}
               </select>
-              <select value={semester} onChange={e => setSemester(e.target.value)} className="border border-gray-300 p-2 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
+              <select value={semester} onChange={e => setSemester(e.target.value)} className="border p-2 rounded-lg">
                 <option value="">Select Semester</option>
-                {[1, 2].map(s => <option key={s} value={s}>{`Semester ${s}`}</option>)}
+                {[1,2].map(s => <option key={s} value={s}>{`Semester ${s}`}</option>)}
               </select>
-              <select value={selectedStudent} onChange={e => setSelectedStudent(e.target.value)} className="border border-gray-300 p-2 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
+              <select value={selectedStudent} onChange={e => setSelectedStudent(e.target.value)} className="border p-2 rounded-lg">
                 <option value="">Select Student</option>
                 {students.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
               </select>
@@ -239,32 +229,34 @@ export default function FacultyDashboard() {
                 <table className="min-w-full divide-y divide-gray-200 rounded-xl overflow-hidden shadow-md mb-6">
                   <thead className="bg-indigo-500 text-white">
                     <tr>
-                      <th className="px-4 py-3 text-left text-sm font-medium tracking-wider">Subject Name</th>
-                      <th className="px-4 py-3 text-left text-sm font-medium tracking-wider">Marks (Max 100)</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium">Subject Name</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium">Marks (Max 100)</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {subjects.map(sub => (
-                      <tr key={sub.id} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">{sub.name}</td>
-                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                          <input type="number" min="0" max="100" value={marksForm[sub.name] || ''} onChange={e => handleMarksChange(sub.name, e.target.value)} className="border border-gray-300 p-2 rounded-lg w-24 text-center focus:ring-indigo-500 focus:border-indigo-500" disabled={loading} />
+                      <tr key={sub.id}>
+                        <td className="px-4 py-3">{sub.name}</td>
+                        <td className="px-4 py-3">
+                          <input
+                            type="number"
+                            min="0"
+                            max="100"
+                            value={marksForm[sub.name] || ''}
+                            onChange={e => handleMarksChange(sub.name, e.target.value)}
+                            className="border border-gray-300 p-2 rounded-lg w-24 text-center"
+                          />
                         </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
 
-                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+                <div className="flex justify-between items-center">
                   <div className="flex gap-4">
-                    <button onClick={saveMarks} className="bg-green-600 hover:bg-green-700 text-white font-medium px-6 py-3 rounded-xl shadow-md transition-all duration-200 disabled:opacity-50" disabled={loading}>
-                      {loading ? `${Icons.Loading} Saving...` : 'Save Marks'}
-                    </button>
-                    <button onClick={calculateCGPA} className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-6 py-3 rounded-xl shadow-md transition-all duration-200 disabled:opacity-50" disabled={loading}>
-                      {loading ? `${Icons.Loading} Calculating...` : 'Calculate CGPA'}
-                    </button>
+                    <button onClick={saveMarks} className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg">Save Marks</button>
+                    <button onClick={calculateCGPA} className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg">Calculate CGPA</button>
                   </div>
-
                   {cgpa !== null && (
                     <div className="p-3 bg-blue-50 border-l-4 border-blue-500 rounded-lg shadow-inner">
                       <span className="text-lg font-bold text-gray-700">
@@ -278,37 +270,99 @@ export default function FacultyDashboard() {
           </div>
         )}
 
-        {/* Add Student Tab */}
-        {activeTab === 'addStudent' && (
+        {/* ADD STUDENT TAB */}
+        {/* {activeTab === 'addStudent' && (
           <div className="bg-white p-6 rounded-xl shadow-lg max-w-lg">
-            <h2 className="text-xl font-semibold text-gray-700 mb-5">Add New Student Account</h2>
-            <div className="flex flex-col gap-4">
-              <input type="text" placeholder="Full Name" value={newStudent.name} onChange={e => setNewStudent({ ...newStudent, name: e.target.value })} className="border border-gray-300 p-3 rounded-lg focus:ring-indigo-500 focus:border-indigo-500" />
-              <input type="email" placeholder="Email (Login ID)" value={newStudent.email} onChange={e => setNewStudent({ ...newStudent, email: e.target.value })} className="border border-gray-300 p-3 rounded-lg focus:ring-indigo-500 focus:border-indigo-500" />
-              <input type="password" placeholder="Initial Password" value={newStudent.password} onChange={e => setNewStudent({ ...newStudent, password: e.target.value })} className="border border-gray-300 p-3 rounded-lg focus:ring-indigo-500 focus:border-indigo-500" />
-              <button onClick={handleAddStudent} className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-6 py-3 rounded-xl shadow-md transition-all duration-200 disabled:opacity-50" disabled={loading}>
-                {loading ? `${Icons.Loading} Adding Student...` : 'Add Student'}
-              </button>
-            </div>
+            <h2 className="text-xl font-semibold text-gray-700 mb-5">Add New Student</h2>
+            <input type="text" placeholder="Full Name" value={newStudent.name} onChange={e => setNewStudent({...newStudent, name: e.target.value})} className="border p-3 rounded-lg mb-3 w-full" />
+            <input type="email" placeholder="Email" value={newStudent.email} onChange={e => setNewStudent({...newStudent, email: e.target.value})} className="border p-3 rounded-lg mb-3 w-full" />
+            <input type="password" placeholder="Password" value={newStudent.password} onChange={e => setNewStudent({...newStudent, password: e.target.value})} className="border p-3 rounded-lg mb-4 w-full" />
+            <button onClick={handleAddStudent} className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl shadow-md w-full">Add Student</button>
           </div>
-        )}
+        )} */}
+        {/* ADD STUDENT TAB */}
+{activeTab === 'addStudent' && (
+  <div className="bg-white p-6 rounded-xl shadow-lg max-w-lg">
+    <h2 className="text-xl font-semibold text-gray-700 mb-5">Add New Student</h2>
+    
+    <input 
+      type="text" 
+      placeholder="Full Name" 
+      value={newStudent.name} 
+      onChange={e => setNewStudent({...newStudent, name: e.target.value})} 
+      className="border p-3 rounded-lg mb-3 w-full" 
+    />
+    
+    <input 
+      type="email" 
+      placeholder="Email" 
+      value={newStudent.email} 
+      onChange={e => setNewStudent({...newStudent, email: e.target.value})} 
+      className="border p-3 rounded-lg mb-3 w-full" 
+    />
+    
+    <input 
+      type="password" 
+      placeholder="Password" 
+      value={newStudent.password} 
+      onChange={e => setNewStudent({...newStudent, password: e.target.value})} 
+      className="border p-3 rounded-lg mb-3 w-full" 
+    />
+    
+    <div className="flex gap-3 mb-4">
+      <select 
+        value={newStudent.year} 
+        onChange={e => setNewStudent({...newStudent, year: e.target.value})} 
+        className="border p-3 rounded-lg flex-1"
+      >
+        <option value="">Select Year</option>
+        {[1, 2, 3, 4].map(y => <option key={y} value={y}>{`Year ${y}`}</option>)}
+      </select>
+      
+      <select 
+        value={newStudent.semester} 
+        onChange={e => setNewStudent({...newStudent, semester: e.target.value})} 
+        className="border p-3 rounded-lg flex-1"
+      >
+        <option value="">Select Semester</option>
+        {[1, 2].map(s => <option key={s} value={s}>{`Semester ${s}`}</option>)}
+      </select>
+    </div>
+    
+    <input 
+      type="text" 
+      placeholder="Division" 
+      value={newStudent.division} 
+      onChange={e => setNewStudent({...newStudent, division: e.target.value})} 
+      className="border p-3 rounded-lg mb-4 w-full" 
+    />
+    
+    <button 
+      onClick={handleAddStudent} 
+      className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl shadow-md w-full"
+    >
+      Add Student
+    </button>
+  </div>
+)}
 
-        {/* Results Tab */}
+
+        {/* RESULTS TAB */}
         {activeTab === 'results' && (
           <div className="bg-white p-6 rounded-xl shadow-lg">
             <h2 className="text-xl font-semibold text-gray-700 mb-5">All Students CGPA Overview</h2>
             <table className="min-w-full divide-y divide-gray-200 rounded-xl overflow-hidden shadow-md">
               <thead className="bg-gray-100">
                 <tr>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-600 tracking-wider">Student Name</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-600 tracking-wider">CGPA</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Student Name</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">CGPA</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {results.map(r => (
-                  <tr key={r.name} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">{r.name}</td>
-                    <td className="px-4 py-3 whitespace-nowrap text-md font-bold text-indigo-600">{r.cgpa ?? '-'}</td>
+                  <tr key={r.name}>
+                    <td className="px-4 py-3">{r.name}</td>
+                    <td className="px-4 py-3 text-indigo-700 font-semibold">{r.cgpa ?? '-'}</td>
                   </tr>
                 ))}
               </tbody>
@@ -316,64 +370,51 @@ export default function FacultyDashboard() {
           </div>
         )}
 
-        {/* Subjects Tab */}
+        {/* SUBJECTS TAB */}
         {activeTab === 'subjects' && (
           <div className="bg-white p-6 rounded-xl shadow-lg">
-            <h2 className="text-xl font-semibold text-gray-700 mb-4">Subject Management & Project Info</h2>
-
-            <div className="p-4 mb-4 bg-yellow-50 border-l-4 border-yellow-500 text-yellow-700 rounded-lg">
-              <p className="font-medium">Project Overview:</p>
-              <p className="text-sm">
-                This Faculty Dashboard project allows you to manage students, enter/update marks, calculate CGPA, 
-                and view results and subjects. It simplifies academic tracking and provides quick CGPA calculation 
-                for students across different years and semesters.
-              </p>
+            <h2 className="text-xl font-semibold text-gray-700 mb-4">Subject Information</h2>
+            <div className="p-4 bg-yellow-50 border-l-4 border-yellow-500 rounded-lg mb-4">
+              <p className="font-medium text-yellow-800">Faculty can view all subjects and their respective years & semesters here.</p>
             </div>
 
-            <div className="p-4 mb-4 bg-green-50 border-l-4 border-green-500 text-green-700 rounded-lg">
+            <div className="p-4 bg-green-50 border-l-4 border-green-500 rounded-lg mb-4">
               <div className="flex justify-between items-center cursor-pointer" onClick={() => setShowFormula(!showFormula)}>
-                <p className="font-medium">Procedure for CGPA Calculation (Click to Toggle):</p>
-                <span className="font-bold text-xl">{showFormula ? '-' : '+'}</span>
+                <p className="font-medium text-green-800">CGPA Calculation Formula (Click to Expand)</p>
+                <span>{showFormula ? '−' : '+'}</span>
               </div>
               {showFormula && (
-                <ol className="list-decimal ml-6 mt-2 text-sm">
-                  <li>Faculty enters marks for all subjects of a student for a specific semester.</li>
-                  <li>Click "Save Marks" to store marks in the database.</li>
-                  <li>Click "Calculate CGPA" to compute the student's GPA for the semester based on:</li>
-                  <li className="ml-4">
-                    <span className="font-medium">CGPA = (Sum of (Grade Points × Subject Credits)) / Total Credits</span>
-                  </li>
-                  <li>The result is displayed instantly and stored in the database for future reference.</li>
-                </ol>
+                <ul className="list-disc ml-6 mt-2 text-sm text-gray-700">
+                  <li>Faculty enters marks for all subjects.</li>
+                  <li>Click "Save Marks" to store them.</li>
+                  <li>Click "Calculate CGPA" to compute and store CGPA.</li>
+                </ul>
               )}
             </div>
 
             {subjects.length > 0 && (
-              <div className="overflow-x-auto">
-                <h3 className="text-lg font-semibold text-gray-700 mb-2">Subjects List</h3>
-                <table className="min-w-full divide-y divide-gray-200 rounded-xl overflow-hidden shadow-md">
-                  <thead className="bg-indigo-500 text-white">
-                    <tr>
-                      <th className="px-4 py-3 text-left text-sm font-medium tracking-wider">ID</th>
-                      <th className="px-4 py-3 text-left text-sm font-medium tracking-wider">Name</th>
-                      <th className="px-4 py-3 text-left text-sm font-medium tracking-wider">Year</th>
-                      <th className="px-4 py-3 text-left text-sm font-medium tracking-wider">Semester</th>
-                      <th className="px-4 py-3 text-left text-sm font-medium tracking-wider">Credits</th>
+              <table className="min-w-full divide-y divide-gray-200 rounded-xl overflow-hidden shadow-md">
+                <thead className="bg-indigo-500 text-white">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-sm font-medium">ID</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium">Name</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium">Year</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium">Semester</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium">Credits</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {subjects.map(sub => (
+                    <tr key={sub.id}>
+                      <td className="px-4 py-3">{sub.id}</td>
+                      <td className="px-4 py-3">{sub.name}</td>
+                      <td className="px-4 py-3">{sub.year}</td>
+                      <td className="px-4 py-3">{sub.semester}</td>
+                      <td className="px-4 py-3">{sub.credits}</td>
                     </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {subjects.map(sub => (
-                      <tr key={sub.id}>
-                        <td className="px-4 py-3 text-sm text-gray-900">{sub.id}</td>
-                        <td className="px-4 py-3 text-sm text-gray-900">{sub.name}</td>
-                        <td className="px-4 py-3 text-sm text-gray-900">{sub.year}</td>
-                        <td className="px-4 py-3 text-sm text-gray-900">{sub.semester}</td>
-                        <td className="px-4 py-3 text-sm text-gray-900">{sub.credits}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                  ))}
+                </tbody>
+              </table>
             )}
           </div>
         )}
